@@ -1,0 +1,29 @@
+{% extends  'index.html'%}
+
+
+{% block content %}  
+
+<div class="container">
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form }}
+        <button type="submit">Upload</button>
+        </form>
+        
+        {% if img_obj %}
+    
+        <h3>Succesfully uploaded : {{img_obj.name}}</h3>
+        <img src="{{ img_obj.image.url }}" alt="connect" style="height:100px; width:100px;">
+        <p><strong>Job</strong>{{img_obj.job}}</p>
+        <p><strong>Job Number</strong>{{img_obj.jobnumber}}</p>
+        <br>
+        
+        <img src="{{ img_obj.contract.url }}" alt="connect" style="height:400px; width:400px;">
+
+        {% endif %}
+
+</div>
+
+
+{% endblock %}

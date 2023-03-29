@@ -1,0 +1,19 @@
+{% extends 'index.html' %}
+
+<!Doctype html>
+<html>
+    <head></head>
+    <body>
+        {%block content%}
+            <h1>Register</h1>
+            {% include 'partials/messages.html' %}
+            <form method="POST">
+                {% csrf_token %}
+                {{register_form.as_p}}
+                <button type="submit">Register</button>
+            </form>
+        {% endblock %}
+    </body>
+</html>
+
+

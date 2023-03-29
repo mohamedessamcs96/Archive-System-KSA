@@ -1,0 +1,24 @@
+{% extends  'index.html'%}
+
+
+{% block content %}  
+
+<div class="container">
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ documentForm }}
+        <button type="submit">Upload</button>
+        </form>
+        
+        {% if form_obj %}
+    
+        <h3>Succesfully uploaded : {{form_obj.title}}</h3>
+        <img src="{{ form_obj.document.url }}" alt="connect" style="height:400px; width:400px;">
+
+        {% endif %}
+
+</div>
+
+
+{% endblock %}
