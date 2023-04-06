@@ -28,7 +28,13 @@
         {%endfor%}
       </table>
 
-     
+      {%for document in documents%}
+      {{document.title}} 
+
+      <img src="/media/{{ BASIC_DIR }}/{{document.image}}"/>  
+      {{ BASIC_DIR }}/{{document.image}}
+      {%endfor%}
+
       <a href="{% url 'adddocument'  user.jobnumber %}">Add Document </a>
       
 

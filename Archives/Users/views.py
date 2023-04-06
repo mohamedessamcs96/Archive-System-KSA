@@ -6,7 +6,7 @@ from django.conf import settings
 from django.http import HttpResponse
 import datetime 
 from django.contrib.auth.decorators import login_required
-from .models import UserAdmin,AddUser
+from .models import UserAdmin,AddUser,Document
 from .forms import CustomerForm,AddUserForm,SearchUserForm,AddDocument
 
 
@@ -112,8 +112,10 @@ def search_user(request):
         user=AddUser.objects.get(jobnumber=jobnumber)
         print(user)
         print("user")
+        documents=Document.objects.filter(user=jobnumber)
+        print("documents")
         if user!=None: 
-            context={'form':form,'users':users,'user':user}
+            context={'form':form,'users':users,'user':user,'documents':documents}
             return render(request,'history.html',context)
         else:
             return HttpResponse("No user found")
@@ -124,18 +126,32 @@ def search_user(request):
 
 @login_required(login_url='/login/')
 def add_document(request,pk):
-    documentForm=AddDocument(request.POST)
     if request.method == 'POST':
-        user=AddUser.objects.get(jobnumber=pk)
         documentForm=AddDocument(request.POST)
-        print(user)
-        documentForm.save(commit=False)
-        documentForm.user=user
-        print("Data")
-        print(user)
-        documentForm.save()
-        form_obj = documentForm.instance
-        context={'documentForm':documentForm,'form_obj':form_obj}
-        return render(request,'add_document.html',context)
+        recipient=[]   #receiver of mail must be a list
+        recipient.append(request.user)
+        if documentForm.is_valid:
+            #documentForm.cleaned_data['name']
+            usertable=AddUser.objects.get(jobnumber=pk)
+            #usertable=12345
+            #documentForm=AddDocument(request.POST)
+            print(usertable)
+            #documentForm.save(commit=False)
+            #documentForm.user=usertable
+            print("Data")
+            print(usertable)
+            #documentForm.save()
+            form_obj = documentForm.instance
+            #image=(request.POST.get('image'))
+            #print(image)
+            title=(request.POST.get('title'))
+            img = request.FILES['image']
+            print(img)
+            print(form_obj.image)
+            d = Document.objects.create(user=usertable,title=title,image=img)
+            print(d)
+            context={'documentForm':documentForm,'form_obj':form_obj}
+            return render(request,'add_document.html',context)
+    documentForm=AddDocument()
     context={'documentForm':documentForm}
     return render(request,'add_document.html',context)  
