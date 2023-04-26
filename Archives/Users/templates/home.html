@@ -5,9 +5,20 @@
     <head></head>
     <body>
         {%block content%}
-        <h1>Home</h1>
-        <button onclick="location.href='search_user';">Search For User</button>
-        <button onclick="location.href='add_user';" >Add User</button>
+        <h1 style="text-align: center;">Home</h1>
+        <div style="margin-left: 34%;margin-top:20px;margin-bottom:20px;">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-3">
+                        <button  class="btn btn-outline-dark" onclick="location.href='search_user';">Search User</button>
+                    </div>
+                    <div class="col-md-3">
+                        <button  class="btn btn-outline-dark" onclick="location.href='add_user';" >Add User</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
         {% endblock %}
     </body>
 </html>

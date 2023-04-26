@@ -16,6 +16,7 @@ urlpatterns=[
     path('',views.home_page,name='homepage'),
     path('add_user/',views.add_user,name='adduser'),
     path('search_user/',views.search_user,name='searchuser'),
+    path('create_report/<int:pk>',views.create_report,name='createreport'),
     path('add_document/<int:pk>',views.add_document,name='adddocument'),
     path('password_reset/',auth_views.PasswordResetView.as_view(),name='password_reset'),
     path('password_reset/done/',auth_views.PasswordResetDoneView.as_view(),name='password_reset_done'),

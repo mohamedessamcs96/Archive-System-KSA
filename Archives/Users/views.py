@@ -5,11 +5,20 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.conf import settings
 from django.http import HttpResponse
 import datetime 
+# Import these methods
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from django.http import HttpResponse
+from reportlab.platypus import Frame
+from reportlab.lib.pagesizes import A4, landscape
 from django.contrib.auth.decorators import login_required
 from .models import UserAdmin,AddUser,Document
 from .forms import CustomerForm,AddUserForm,SearchUserForm,AddDocument
-
-
+# importing required libraries
+import cv2  # OpenCV library 
+import time # time library
+import numpy as np
+from threading import Thread # library for multi-threading
 
 #Create an error message function
 def get_error_message(request):
@@ -152,6 +161,100 @@ def add_document(request,pk):
             print(d)
             context={'documentForm':documentForm,'form_obj':form_obj}
             return render(request,'add_document.html',context)
+    # In django views
+    TakeImage=False
+    UploadImage=False
+    if request.GET.get('UploadImage') == 'UploadImage':
+        UploadImage=not(UploadImage) 
+        TakeImage=False     
+        print('user clicked UploadImage')
+        print(UploadImage)
+    if request.GET.get('TakeImage') == 'TakeImage':
+        print('user clicked TakeImage')
+        TakeImage=not TakeImage 
+        UploadImage=False
+        video = cv2.VideoCapture(0)
+        if video.isOpened():
+            frames=[]
+            while len(frames)<20:
+                time.sleep(0.1) 
+                check, frame = video.read()
+                if check:
+                    cv2.imshow('Color Frame', frame)
+                    frames.append(frame)
+                    lastframe=frames[len(frames)-1]
+                    """                    mask = np.zeros(lastframe.shape[:2],np.uint8)
+                    bgdModel = np.zeros((1,65),np.float64)
+                    fgdModel = np.zeros((1,65),np.float64)
+                    rect = (20,20,lastframe.shape[1]-20,lastframe.shape[0]-20)
+                    cv2.grabCut(lastframe,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
+                    mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
+                    lastframe = lastframe*mask2[:,:,np.newaxis]
+                    """
+                    """
+                    gray=cv2.cvtColor(lastframe,cv2.COLOR_BGR2GRAY)
+
+                    # Set the threshold and maxValue
+                    thresh= 120
+                    maxValue = 255
+
+                    gray=cv2.cvtColor(lastframe,cv2.COLOR_BGR2GRAY)
+                    # Basic threshold example
+                    th, dst= cv2.threshold(gray, thresh, maxValue, cv2. THRESH_BINARY)
+                    lastframe[np.where(dst==0)] = 255
+                    #use -1 as the 3rd parameter to draw all the contours
+                    #cv2.drawContours(lastframe,contours,-1,(0,255,0),3)
+                    #gray=cv2.cvtColor(lastframe,cv2.COLOR_BGR2GRAY)
+                    #edged=cv2.Canny(gray,30,200)
+                    #we have to add _, before the contours as an empty argument due to upgrade of the OpenCV version
+                    #contours, hierarchy=cv2.findContours(edged,cv2.RETR_EXTERNAL,cv2.CHAIN_APPROX_NONE)
+                    #_, contours,hierarchy=cv2.findContours(edged,cv2.RETR_LIST,cv2.CHAIN_APPROX_NONE)
+                    #cv2.drawContours(lastframe, contours, -1, (0, 255, 0), -1) #---set the last parameter to -1
+                    """
+                    cv2.imwrite('./media/images/newdocument.jpg' , lastframe)
+                    document=cv2.imread('document.jpg')
+                    print(document)
+                    key = cv2.waitKey(10)
+                    if key == ord('q'):
+                        break
+                else:
+                    print('Frame not available')
+                    print(video.isOpened())
+    document=cv2.imread('document.jpg')
+    import os
+    print(os.getcwd())
+    documentpath=os.path.join(os.getcwd(),'document.jpg')
+    print(documentpath)
     documentForm=AddDocument()
-    context={'documentForm':documentForm}
+    context={'documentForm':documentForm,'document':documentpath,'UploadImage':UploadImage,'TakeImage':TakeImage}
     return render(request,'add_document.html',context)  
+
+
+def create_report(request,pk):
+    # Create the HttpResponse object with the appropriate PDF headers.
+    response = HttpResponse(content_type='application/pdf')
+    response['Content-Disposition'] = 'attachment; filename="EmplyeeReport.pdf"'
+
+    usertable=AddUser.objects.get(jobnumber=pk)
+    
+
+    buffer = BytesIO()
+
+    # Create the PDF object, using the BytesIO object as its "file."
+    p = canvas.Canvas(buffer)
+    p.setPageSize((800, 800)) 
+    # Draw things on the PDF. Here's where the PDF generation happens.
+    # See the ReportLab documentation for the full list of functionality.
+    p.drawString(400,700, f"Hello {usertable.name}")
+    p.drawString(400,680, f"job number {usertable.jobnumber}")
+    
+
+    # Close the PDF object cleanly.
+    p.showPage()
+    p.save()
+
+    # Get the value of the BytesIO buffer and write it to the response.
+    pdf = buffer.getvalue()
+    buffer.close()
+    response.write(pdf)
+    return response
